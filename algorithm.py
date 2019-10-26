@@ -101,7 +101,7 @@ def checkFlush():       #判断同花顺
     for i in range(1,len(list)):
         if list[i][0]>=5:
             count=0     #计算连续牌数
-            t=0     #标记同花顺开始位置
+            t=1     #标记同花顺开始位置
             for j in range(len(list[i])-1,0,-1):
                 if list[i][j]==1:
                     count+=1
@@ -266,8 +266,8 @@ def check_order(ch):         #判断顺子
                             list[k][0]-=1
                             list[0][j]-=1
                             break
-            count_order += 1
-            return str
+                count_order += 1
+                return str
 
         else:
             x=0
@@ -438,6 +438,8 @@ def sort_list(str):             #将列表排序
 def Biography(s): #传入传出数据
     card=change(s)
     put_list(card)
+    #for i in range(0,5):
+        #print(list[i])
     ch=0
     str1=put5card(ch)
     if len(str1)==3:
@@ -457,7 +459,7 @@ def Biography(s): #传入传出数据
                     list[0][t] -= 1
                 if count==2 :
                     break
-        elif  list[0].count(3)>1:        #补全后墩的葫芦
+        elif  list[0].count(3)>0:        #补全后墩的葫芦
             t=list[0].index(3)
             for i in range(1,5):
                 if list[i][t] == 1:
@@ -540,7 +542,7 @@ def Biography(s): #传入传出数据
                         list[0][t] -= 1
                     if count==2 :
                         break
-            else:                                       #补全后墩的三条
+            else:                                       #补全中墩的三条
                 while True:
                     t = list[0].index(1)
                     for i in range(1, 5):
@@ -574,7 +576,7 @@ def Biography(s): #传入传出数据
                         list[i][0] -= 1
                         list[0][t] -= 1
                         break
-        if  len(str2)==2:                           #补全后墩的1条
+        if  len(str2)==2:                           #补全中墩的1条
             z=0
             while z<3:
                 t = list[0].index(1)
@@ -588,47 +590,71 @@ def Biography(s): #传入传出数据
                 z+=1
     else:
         z = 0
-        tag=1
+        listz=[]
         for t in range(13,0,-1):
             if list[0][t]==1:
                 for i in range(1, 5):
                     if list[i][t] == 1:
-                        if  len(str2)==1 and tag==1:
-                            tag=0
-                            continue
-                        str2.append(listcard[i - 1][t - 1])
-                        list[i][t] = 0
-                        list[i][0] -= 1
-                        list[0][t] -= 1
-                        z += 1
-                        break
+                        listz.append([i,t])
+        a=listz.pop(0)
+        str2.append(listcard[a[0]-1][a[1]-1])
+        while z<4:
+            a = listz.pop()
+            str2.append(listcard[a[0]-1][a[1]-1])
+            list[a[0]][a[1]] = 0
+            list[a[0]][0] -= 1
+            list[0][a[1]] -= 1
+            z+=1
 
-            if z==5:
-                break
     string=set(card)-set(str1)-set(str2)
     str3=[]
     for x in string:
         str3.append(x)
 
+    str1 = sort_list(str1)
+    str2 = sort_list(str2)
+    str3 = sort_list(str3)
+
     if count_order==2 or  count_flower==2:          #中后墩都是同花或顺子时，避免反水
         g = 0
         for h in range(4, -1, -1):
-            if str1[h] < str2[h]:
+            pattern = '[0-9a-zA-Z]{1,2}'
+            s1 = re.findall(pattern, str1[h])
+            s2 = re.findall(pattern, str2[h])
+            s1 = ' '.join(s1)
+            s2 = ' '.join(s2)
+            if len(s1) == 2:
+                x1 = 'A'
+            else:
+                if s1 == 'A':
+                    x1 = 'Z'
+                elif s1 == 'K':
+                    x1 = 'X'
+                else:
+                    x1 = s1
+            if len(s2) == 2:
+                x2 = 'A'
+            else:
+                if s2 == 'A':
+                    x2 = 'Z'
+                elif s2 == 'K':
+                    x2 = 'X'
+                else:
+                    x2 = s2
+            if x1 < x2:
                 g += 1
-            if str1[h] > str2[h]:
+                break
+            if x1 > x2:
                 break
         if g > 0:
             st=str1
             str1=str2
             str2=st
 
-    str1 = sort_list(str1)
-    str2 = sort_list(str2)
-    str3 = sort_list(str3)
     str1=' '.join(str1)
     str2 = ' '.join(str2)
     str3 = ' '.join(str3)
     str0=[str3,str2,str1]
     return str0
+
 s=Biography(s)
-print(s)
