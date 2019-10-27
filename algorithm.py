@@ -121,7 +121,7 @@ def checkFlush():  # 判断同花顺
                         list[i][0] -= 1
                         list[0][n] -= 1
                 else:  # 同花顺大于5张时
-                    m = 0
+                    m = t+5
                     for k in range(t + 5, t + count):  # 避免拆炸弹、葫芦、对子
                         if list[0][k] > 1:
                             m = k
@@ -131,7 +131,8 @@ def checkFlush():  # 判断同花顺
                         list[i][n] = 0
                         list[i][0] -= 1
                         list[0][n] -= 1
-                    return str
+                str.append(1)
+                return str
     return str
 
 
@@ -169,7 +170,16 @@ def fewer_card(i):
     for x in range(l, -1, -1):
         if len(list1) == 5:
             break
-        if list[0][list1[x]] > 1:
+        if list[0][list1[x]] == 3:
+            if t > i and list[t][list1[x]] == 1:
+                continue
+            list1.pop(x)
+            l-=1
+
+    for x in range(l, -1, -1):
+        if len(list1) == 5:
+            break
+        if list[0][list1[x]] == 2:
             if t > i and list[t][list1[x]] == 1:
                 continue
             list1.pop(x)
@@ -365,7 +375,7 @@ def simple_pair():  # 判断一对
     return str
 
 
-def put5card(ch):  # 确定中后墩
+def put_back():  # 确定中后墩
     t = -1
     str = []
     s = []  # 判断是否存在三条
@@ -381,12 +391,77 @@ def put5card(ch):  # 确定中后墩
         str = []
         if list[0].count(2) > 0 or list[0].count(3) > 1:
             for n in range(1, 5):
+                if list[n][0] >= 5:
+                    if list[n][t]==1:
+                        c=1
+                    else:
+                        c=0
+                    if list[n][0]-c>=5 and n<10:
+                        return checkSameflower(0)
+            for n in range(1, 5):
                 if list[n][t] == 1:
                     str.append(listcard[n - 1][t - 1])
                     list[n][t] = 0
                     list[n][0] -= 1
                     list[0][t] -= 1
             if list[0].count(2) == 1:
+                m = list[0].index(2)
+                for i in range(1, 5):
+                    if list[i][m] == 1:
+                        str.append(listcard[i - 1][m - 1])
+                        list[i][m] = 0
+                        list[i][0] -= 1
+                        list[0][m] -= 1
+            return str
+    str = checkSameflower(0)  # 判断同花
+    if str:
+        return str
+    str = check_order(0)  # 判断顺子
+    if str:
+        return str
+    if t >= 0:  # 判断三条
+        for i in range(1, 5):
+            if list[i][t] == 1:
+                str.append(listcard[i - 1][t - 1])
+                list[i][t] = 0
+                list[i][0] -= 1
+                list[0][t] -= 1
+        if len(str) == 3:
+            return str
+        else:
+            str = []
+    if str:
+        return str
+    if list[0].count(2) >= 1:
+
+        if list[0].count(2) > 3 :
+            str = double_pair()  # 判断双对
+        else:
+            str = simple_pair()  # 判断一对
+    return str
+
+def put_middle(ch):  # 确定中墩
+    t = -1
+    str = []
+    s = []  # 判断是否存在三条
+    str = checkFlush()  # 判断同花顺
+    if str:
+        return str
+    str = checkBomb()  # 判断炸弹
+    if str:
+        return str
+    str = check_gourd()  # 判断葫芦
+    if str:
+        t = str[0]  # 得到三条位置
+        str = []
+        if list[0].count(2) > ch or list[0].count(3) > 1:
+            for n in range(1, 5):
+                if list[n][t] == 1:
+                    str.append(listcard[n - 1][t - 1])
+                    list[n][t] = 0
+                    list[n][0] -= 1
+                    list[0][t] -= 1
+            if list[0].count(2) >= 1:
                 m = list[0].index(2)
                 for i in range(1, 5):
                     if list[i][m] == 1:
@@ -422,7 +497,6 @@ def put5card(ch):  # 确定中后墩
             str = simple_pair()  # 判断一对
     return str
 
-
 def sort_list(str):  # 将列表排序
     list0 = []
     list1 = []
@@ -452,15 +526,42 @@ def sort_list(str):  # 将列表排序
 
 
 def Biography(s):  # 传入传出数据
+    global list
+    list = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
     card = change(s)
     put_list(card)
     # for i in range(0,5):
     # print(list[i])
     ch = 0
-    str1 = put5card(ch)
+    str1 = put_back()
     if len(str1) == 3:
         ch = 1
-    str2 = put5card(ch)
+    str2 = put_middle(ch)
+    if len(str1)==5:
+        if len(str2)==3:
+            if 2 in list[0]:
+                st = str1
+                str1 = str2
+                str2 = st
+        if len(str2)==5:
+            st1 = ' '.join(str1)
+            st2 = ' '.join(str2)
+            patterns = '[0-9a-zA-Z]{1,2}'
+            st1=re.findall(patterns,st1)
+            st2 = re.findall(patterns, st2)
+            if st2.count(st2[0])==3 or st2.count(st2[4])==3:
+                if st1.count(st1[0])<3 and st1.count(st1[4])<3:
+                    st = str1
+                    str1 = str2
+                    str2 = st
+    if len(str1) == 6:
+        str1.pop()
+    if len(str2) == 6:
+        str2.pop()
     if len(str1) == 3:  # 补全后墩的葫芦或三条
         count = 0
 
